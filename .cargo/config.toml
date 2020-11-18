@@ -1,0 +1,6 @@
+[build]
+target = "armv7a-none-eabi"
+rustflags = ["-C", "target-cpu=cortex-a9", "-C", "link-args=-Tlink.x"]
+
+[unstable]
+build-std = ["core", "compiler_builtins", "alloc"]
