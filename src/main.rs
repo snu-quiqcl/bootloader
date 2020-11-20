@@ -20,7 +20,6 @@ use core::mem::transmute;
 #[no_mangle]
 pub unsafe extern "C" fn entry() -> ! {
     uart::uart_init();
-    println!("Simple bootloader");
     wait_magic();
     
     let mut file_len = read() as u32;
@@ -46,27 +45,28 @@ pub unsafe extern "C" fn entry() -> ! {
         if ph.p_type != 1 {
             continue;
         }
+        println!("Load to {:x} ({:x} bytes)", ph.p_paddr, ph.p_filesz);
         memcpy(ph.p_paddr as *mut u8, elf_addr.offset(ph.p_offset as isize), ph.p_filesz as usize);
     }
 
     println!("Load complete");
     println!("Jump to {:x}", elf_hdr.e_entry);
-    while !uart::is_tx_empty() {}
 
     let entry = transmute::<u32, fn() -> !>(elf_hdr.e_entry);
     entry()
 }
 
-/// Wait magic number 111
+/// Wait magic number 1111
 fn wait_magic() {
     let mut count = 0;
     loop {
         if read() == 1 {
             count += 1;
         } else {
+            print!("1");
             count = 0;
         }
-        if count == 3 {
+        if count == 4 {
             break;
         }
     }
